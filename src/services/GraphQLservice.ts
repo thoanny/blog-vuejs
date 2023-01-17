@@ -7,49 +7,65 @@ const graphQLClient = axios.create({
     Accept: 'application/json',
     'Content-Type': 'application/json'
   }
-})
+});
+
+const limit = 10;
 
 export default {
-  async getPosts() {
+  async getPosts(next: String, previous: String) {
+    let first = limit;
+    let last = 0;
+
+    if (previous) {
+      first = 0;
+      last = limit;
+    }
+
     const res = await graphQLClient({
       method: 'post',
       data: {
         query: `
           query Posts {
-              posts(where: {status: PUBLISH}) {
-                  nodes {
-                  id
-                  slug
-                  title
-                  date
-                  excerpt
-                  featuredImage {
-                      node {
+            posts(where: {status: PUBLISH}, first: ${first}, after: "${next}", last: ${last}, before: "${previous}") {
+              nodes {
+                id
+                slug
+                title
+                date
+                excerpt
+                featuredImage {
+                    node {
                       altText
                       mediaDetails {
                           sizes(include: MEDIUM_LARGE) {
-                          height
-                          width
-                          sourceUrl
+                            height
+                            width
+                            sourceUrl
                           }
                       }
-                      }
-                  }
-                  categories {
-                      nodes {
+                    }
+                }
+                categories {
+                    nodes {
                       name
-                      }
-                  }
-                  commentCount
-                  }
+                    }
+                }
+                commentCount
               }
+              pageInfo {
+                hasNextPage
+                hasPreviousPage
+                startCursor
+                endCursor
+              }
+            }
           }
       `
       }
     });
 
     if (res.data.data.posts) {
-      return res.data.data.posts.nodes;
+      return { posts: res.data.data.posts.nodes, pageInfo: res.data.data.posts.pageInfo };
     }
 
     return null;
@@ -147,88 +163,116 @@ export default {
 
     return null;
   },
-  async getPostsByCategory(category: String) {
-    const res = await graphQLClient({
-      method: 'post',
-      data: {
-        query: `
-                query Posts {
-                    category(id: "${category}", idType: SLUG) {
-                      name
-                      posts {
-                        nodes {
-                          slug
-                          title
-                          date
-                          excerpt
-                          featuredImage {
-                            node {
-                              altText
-                              mediaDetails {
-                                sizes(include: MEDIUM_LARGE) {
-                                  height
-                                  width
-                                  sourceUrl
-                                }
-                              }
-                            }
-                          }
-                          categories {
-                            nodes {
-                              name
-                            }
-                          }
-                          commentCount
-                        }
-                      }
-                    }
-                  }
-                `
-      }
-    });
+  async getPostsByCategory(category: String, next: String, previous: String) {
+    let first = limit;
+    let last = 0;
 
-    return res.data.data.category;
-  },
-  async getPostsByTag(tag: String) {
+    if (previous) {
+      first = 0;
+      last = limit;
+    }
+
     const res = await graphQLClient({
       method: 'post',
       data: {
         query: `
-              query Posts {
-                tag(id: "${tag}", idType: SLUG) {
-                  name
-                  posts {
-                    nodes {
-                      slug
-                      title
-                      date
-                      excerpt
-                      featuredImage {
-                        node {
-                          altText
-                          mediaDetails {
-                            sizes(include: MEDIUM_LARGE) {
-                              height
-                              width
-                              sourceUrl
-                            }
-                          }
+          query Posts {
+            category(id: "${category}", idType: SLUG) {
+              name
+              posts(where: {status: PUBLISH}, first: ${first}, after: "${next}", last: ${last}, before: "${previous}") {
+                nodes {
+                  slug
+                  title
+                  date
+                  excerpt
+                  featuredImage {
+                    node {
+                      altText
+                      mediaDetails {
+                        sizes(include: MEDIUM_LARGE) {
+                          height
+                          width
+                          sourceUrl
                         }
                       }
-                      categories {
-                        nodes {
-                          name
-                        }
-                      }
-                      commentCount
                     }
                   }
+                  categories {
+                    nodes {
+                      name
+                    }
+                  }
+                  commentCount
+                }
+                pageInfo {
+                  hasNextPage
+                  hasPreviousPage
+                  startCursor
+                  endCursor
                 }
               }
-              `
+            }
+          }
+        `
       }
     });
 
-    return res.data.data.tag;
+    return { category: res.data.data.category.name, posts: res.data.data.category.posts.nodes, pageInfo: res.data.data.category.posts.pageInfo };
+  },
+  async getPostsByTag(tag: String, next: String, previous: String) {
+    let first = limit;
+    let last = 0;
+
+    if (previous) {
+      first = 0;
+      last = limit;
+    }
+
+    const res = await graphQLClient({
+      method: 'post',
+      data: {
+        query: `
+          query Posts {
+            tag(id: "${tag}", idType: SLUG) {
+              name
+              posts(where: {status: PUBLISH}, first: ${first}, after: "${next}", last: ${last}, before: "${previous}") {
+                nodes {
+                  slug
+                  title
+                  date
+                  excerpt
+                  featuredImage {
+                    node {
+                      altText
+                      mediaDetails {
+                        sizes(include: MEDIUM_LARGE) {
+                          height
+                          width
+                          sourceUrl
+                        }
+                      }
+                    }
+                  }
+                  categories {
+                    nodes {
+                      name
+                    }
+                  }
+                  commentCount
+                }
+                pageInfo {
+                  hasNextPage
+                  hasPreviousPage
+                  startCursor
+                  endCursor
+                }
+              }
+            }
+          }
+        `
+      }
+    });
+
+    return { tag: res.data.data.tag.name, posts: res.data.data.tag.posts.nodes, pageInfo: res.data.data.tag.posts.pageInfo };
   }
 }

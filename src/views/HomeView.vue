@@ -4,20 +4,23 @@ import GraphQLService from '@/services/GraphQLservice'
 
 export default {
   name: 'Post',
-  props: ['slug'],
+  props: ['previous', 'next'],
   components: {},
   data() {
     return {
       posts: null,
+      pageInfo: null,
       totalPosts: 0
     }
   },
   created() {
     watchEffect(() => {
       this.posts = null;
-      GraphQLService.getPosts()
+      this.pageInfo = null;
+      GraphQLService.getPosts(this.next, this.previous)
         .then((res) => {
-          this.posts = res;
+          this.posts = res?.posts;
+          this.pageInfo = res?.pageInfo;
         }).catch((e) => {
           console.log(e);
         })
@@ -35,6 +38,15 @@ export default {
       <RouterLink :key="post.id" :to="{ name: 'post', params: { slug: post.slug } }">{{
         post.title
       }}</RouterLink>
+    </li>
+    <li v-if="pageInfo.hasPreviousPage">
+      <RouterLink key="previous" :to="{ name: 'home', query: { previous: pageInfo.startCursor } }" class="font-bold">
+        Précédent
+      </RouterLink>
+    </li>
+    <li v-if="pageInfo.hasNextPage">
+      <RouterLink key="next" :to="{ name: 'home', query: { next: pageInfo.endCursor } }" class="font-bold">Suivant
+      </RouterLink>
     </li>
   </ul>
 </template>

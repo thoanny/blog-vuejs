@@ -4,21 +4,25 @@ import GraphQLService from '@/services/GraphQLservice'
 
 export default {
     name: 'Category',
-    props: ['slug'],
+    props: ['slug', 'previous', 'next'],
     components: {},
     data() {
         return {
             category: null,
-            posts: null
+            posts: null,
+            pageInfo: null
         }
     },
     created() {
         watchEffect(() => {
+            this.category = null;
             this.posts = null;
-            GraphQLService.getPostsByCategory(this.$props.slug)
+            this.pageInfo = null;
+            GraphQLService.getPostsByCategory(this.slug, this.next, this.previous)
                 .then((res) => {
-                    this.category = (res && res.name) ? res.name : null;
-                    this.posts = (res && res.posts) ? res.posts.nodes : null;
+                    this.category = (res.category) ? res.category : null;
+                    this.posts = (res.posts) ? res.posts : null;
+                    this.pageInfo = (res.pageInfo) ? res.pageInfo : null;
                 }).catch((e) => {
                     console.log(e);
                 })
@@ -36,6 +40,17 @@ export default {
             <RouterLink :key="post.id" :to="{ name: 'post', params: { slug: post.slug } }">{{
                 post.title
             }}</RouterLink>
+        </li>
+        <li v-if="pageInfo.hasPreviousPage">
+            <RouterLink key="previous" :to="{ name: 'category', query: { previous: pageInfo.startCursor } }"
+                class="font-bold">
+                Précédent
+            </RouterLink>
+        </li>
+        <li v-if="pageInfo.hasNextPage">
+            <RouterLink key="next" :to="{ name: 'category', query: { next: pageInfo.endCursor } }" class="font-bold">
+                Suivant
+            </RouterLink>
         </li>
     </ul>
 </template>

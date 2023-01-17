@@ -8,18 +8,19 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
+      props: (route) => ({ previous: route.query.previous, next: route.query.next }),
       component: HomeView
     },
     {
       path: '/categorie/:slug',
       name: 'category',
-      props: true,
+      props: (route) => ({ slug: route.params.slug, previous: route.query.previous, next: route.query.next }),
       component: () => import('../views/CategoryView.vue')
     },
     {
       path: '/mot-cle/:slug',
       name: 'tag',
-      props: true,
+      props: (route) => ({ slug: route.params.slug, previous: route.query.previous, next: route.query.next }),
       component: () => import('../views/TagView.vue')
     },
     {
