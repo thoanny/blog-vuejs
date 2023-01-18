@@ -26,16 +26,7 @@ const router = createRouter({
     {
       path: '/:slug',
       name: 'post',
-      props: true,
       component: () => import('../views/PostView.vue'),
-      beforeEnter: to => {
-        return GraphQLservice.getPost(to.params.slug)
-          .then(res => {
-            GStore.post = res;
-          }).catch(e => {
-            console.log(e);
-          })
-      }
     },
     {
       path: '/:catchAll(.*)',

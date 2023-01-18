@@ -1,4 +1,4 @@
-<script lang="ts">
+<script>
 import GraphQLService from '@/services/GraphQLservice'
 
 export default {

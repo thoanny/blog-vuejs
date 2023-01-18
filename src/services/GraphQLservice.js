@@ -12,7 +12,7 @@ const graphQLClient = axios.create({
 const limit = 10;
 
 export default {
-  async getPosts(next: String, previous: String) {
+  async getPosts(next, previous) {
     let first = limit;
     let last = 0;
 
@@ -70,7 +70,7 @@ export default {
 
     return null;
   },
-  async getPost(slug: String) {
+  async getPost(slug) {
     const res = await graphQLClient({
       method: 'post',
       data: {
@@ -163,7 +163,7 @@ export default {
 
     return null;
   },
-  async getPostsByCategory(category: String, next: String, previous: String) {
+  async getPostsByCategory(category, next, previous) {
     let first = limit;
     let last = 0;
 
@@ -219,7 +219,7 @@ export default {
 
     return { category: res.data.data.category.name, posts: res.data.data.category.posts.nodes, pageInfo: res.data.data.category.posts.pageInfo };
   },
-  async getPostsByTag(tag: String, next: String, previous: String) {
+  async getPostsByTag(tag, next, previous) {
     let first = limit;
     let last = 0;
 
