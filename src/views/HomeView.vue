@@ -1,10 +1,8 @@
 <script lang="ts">
-import { watchEffect } from 'vue'
 import GraphQLService from '@/services/GraphQLservice'
 
 export default {
   name: 'Post',
-  props: ['previous', 'next'],
   components: {},
   data() {
     return {
@@ -13,18 +11,25 @@ export default {
       totalPosts: 0
     }
   },
-  created() {
-    watchEffect(() => {
-      this.posts = null;
-      this.pageInfo = null;
-      GraphQLService.getPosts(this.next, this.previous)
-        .then((res) => {
-          this.posts = res?.posts;
-          this.pageInfo = res?.pageInfo;
-        }).catch((e) => {
-          console.log(e);
+  beforeRouteEnter(to, from, next) {
+    GraphQLService.getPosts(to.query.next, to.query.previous)
+      .then((res) => {
+        next(comp => {
+          comp.posts = res?.posts;
+          comp.pageInfo = res?.pageInfo;
         })
-    })
+      }).catch((e) => {
+        console.log(e);
+      })
+  },
+  beforeRouteUpdate(to) {
+    return GraphQLService.getPosts(to.query.next, to.query.previous)
+      .then((res) => {
+        this.posts = res?.posts;
+        this.pageInfo = res?.pageInfo;
+      }).catch((e) => {
+        console.log(e);
+      })
   },
   computed: {}
 }

@@ -1,6 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import NotFound from '../views/NotFound.vue'
+import Nprogress from 'nprogress'
+import GraphQLservice from '@/services/GraphQLservice'
+import GStore from '@/stores/index'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -8,26 +11,31 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      props: (route) => ({ previous: route.query.previous, next: route.query.next }),
       component: HomeView
     },
     {
       path: '/categorie/:slug',
       name: 'category',
-      props: (route) => ({ slug: route.params.slug, previous: route.query.previous, next: route.query.next }),
       component: () => import('../views/CategoryView.vue')
     },
     {
       path: '/mot-cle/:slug',
       name: 'tag',
-      props: (route) => ({ slug: route.params.slug, previous: route.query.previous, next: route.query.next }),
       component: () => import('../views/TagView.vue')
     },
     {
       path: '/:slug',
       name: 'post',
       props: true,
-      component: () => import('../views/PostView.vue')
+      component: () => import('../views/PostView.vue'),
+      beforeEnter: to => {
+        return GraphQLservice.getPost(to.params.slug)
+          .then(res => {
+            GStore.post = res;
+          }).catch(e => {
+            console.log(e);
+          })
+      }
     },
     {
       path: '/:catchAll(.*)',
@@ -35,6 +43,14 @@ const router = createRouter({
       component: NotFound
     }
   ]
+})
+
+router.beforeEach(() => {
+  Nprogress.start();
+})
+
+router.afterEach(() => {
+  Nprogress.done();
 })
 
 export default router
