@@ -15,7 +15,10 @@ import { RouterLink, RouterView } from 'vue-router'
     </nav>
   </header>
 
-  <RouterView />
+  <div class="container mx-auto max-w-5xl">
+    <RouterView />
+  </div>
+
 </template>
 
 <style scoped>
